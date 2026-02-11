@@ -444,9 +444,6 @@ window.customCards.push({
 class AlfenWallboxCardEditor extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
-    if (this.isConnected) {
-      this._render();
-    }
   }
 
   setConfig(config) {
@@ -461,6 +458,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
   }
 
   _render() {
+    if (!this._hass) return;
     if (this._root) {
       this._root.innerHTML = "";
     } else {

@@ -33,6 +33,15 @@ class AlfenWallboxCard extends HTMLElement {
     const getState = (entityId) =>
       entityId && hass.states[entityId] ? hass.states[entityId] : null;
 
+    // Hilfsfunktion: viele Alfen-Werte kommen als sensor.* mit 0/1, true/false oder on/off
+    const isTruthy = (stateObj) => {
+      if (!stateObj || stateObj.state === undefined || stateObj.state === null) {
+        return false;
+      }
+      const v = stateObj.state.toString().toLowerCase();
+      return v === "on" || v === "true" || v === "1";
+    };
+
     const currentState = getState(cfg.entity_current);
     const statusState = getState(cfg.entity_status);
     const sessionEnergyState = getState(cfg.entity_session_energy);
@@ -81,8 +90,8 @@ class AlfenWallboxCard extends HTMLElement {
       ? "Verriegelt"
       : "Entriegelt";
 
-    const pluggedOn = pluggedState && pluggedState.state === "on";
-    const chargingOn = chargingState && chargingState.state === "on";
+    const pluggedOn = isTruthy(pluggedState);
+    const chargingOn = isTruthy(chargingState);
 
     // Status-Text und Klasse
     let statusText = "Bereit";
@@ -596,21 +605,21 @@ class AlfenWallboxCardEditor extends HTMLElement {
     );
     container.appendChild(row1);
 
-    // Zeile: Stecker + Ladevorgang (Binary-Sensoren)
+    // Zeile: Stecker + Ladevorgang (bei Alfen ebenfalls als sensor.* abgebildet)
     const row2 = document.createElement("div");
     row2.classList.add("row");
     row2.appendChild(
       makeSelect(
-        "Stecker angesteckt – plugged_entity (binary_sensor)",
+        "Stecker angesteckt – plugged_entity (sensor)",
         "plugged_entity",
-        (id) => id.startsWith("binary_sensor.")
+        (id) => id.startsWith("sensor.")
       )
     );
     row2.appendChild(
       makeSelect(
-        "Ladevorgang aktiv – charging_entity (binary_sensor)",
+        "Ladevorgang aktiv – charging_entity (sensor)",
         "charging_entity",
-        (id) => id.startsWith("binary_sensor.")
+        (id) => id.startsWith("sensor.")
       )
     );
     container.appendChild(row2);

@@ -11,10 +11,10 @@ class AlfenWallboxCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config.entity_current) {
-      throw new Error("Bitte entity_current (Strom in A) angeben.");
-    }
-    this._config = config;
+    // entity_current wird im Editor gesetzt; wenn es fehlt,
+    // zeigen wir später einfach einen Hinweis in der Karte statt
+    // den gesamten Editor zu blockieren.
+    this._config = { ...config };
 
     if (this.card) return;
 

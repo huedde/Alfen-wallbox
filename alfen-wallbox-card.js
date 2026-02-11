@@ -470,6 +470,56 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const root = this._root;
     const cfg = this._config || {};
 
+    const entities = this._hass ? this._hass.states : {};
+
+    const makeSelect = (label, key, filterFn) => {
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("field");
+
+      const lab = document.createElement("label");
+      lab.textContent = label;
+      lab.style.display = "block";
+      lab.style.fontSize = "12px";
+      lab.style.marginBottom = "2px";
+
+      const select = document.createElement("select");
+      select.style.width = "100%";
+      select.style.padding = "4px 6px";
+      select.style.background = "var(--card-background-color)";
+      select.style.color = "var(--primary-text-color)";
+      select.style.borderRadius = "4px";
+      select.style.border = "1px solid var(--divider-color)";
+
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "– nicht gesetzt –";
+      select.appendChild(empty);
+
+      Object.keys(entities)
+        .filter(filterFn)
+        .sort()
+        .forEach((id) => {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = id;
+          select.appendChild(opt);
+        });
+
+      select.value = cfg[key] || "";
+
+      select.addEventListener("change", (ev) => {
+        this._config = {
+          ...cfg,
+          [key]: ev.target.value || undefined,
+        };
+        this._fireConfigChanged();
+      });
+
+      wrapper.appendChild(lab);
+      wrapper.appendChild(select);
+      return wrapper;
+    };
+
     const style = document.createElement("style");
     style.textContent = `
       .card-editor {
@@ -477,12 +527,13 @@ class AlfenWallboxCardEditor extends HTMLElement {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        font-size: 13px;
       }
       .row {
         display: flex;
         gap: 8px;
       }
-      .row > * {
+      .row > .field {
         flex: 1;
       }
     `;
@@ -491,134 +542,98 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const container = document.createElement("div");
     container.classList.add("card-editor");
 
-    // Name
-    const nameInput = document.createElement("paper-input");
-    nameInput.label = "Name";
+    // Name (einfaches Textfeld)
+    const nameField = document.createElement("div");
+    nameField.classList.add("field");
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Name";
+    nameLabel.style.display = "block";
+    nameLabel.style.fontSize = "12px";
+    nameLabel.style.marginBottom = "2px";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.style.width = "100%";
+    nameInput.style.padding = "4px 6px";
+    nameInput.style.background = "var(--card-background-color)";
+    nameInput.style.color = "var(--primary-text-color)";
+    nameInput.style.borderRadius = "4px";
+    nameInput.style.border = "1px solid var(--divider-color)";
     nameInput.value = cfg.name || "";
-    nameInput.addEventListener("value-changed", (ev) => {
+    nameInput.addEventListener("input", (ev) => {
       this._config = {
         ...cfg,
-        name: ev.detail.value,
+        name: ev.target.value,
       };
       this._fireConfigChanged();
     });
-    container.appendChild(nameInput);
+    nameField.appendChild(nameLabel);
+    nameField.appendChild(nameInput);
+    container.appendChild(nameField);
 
-    // entity_current (Pflicht)
-    const currentPicker = document.createElement("ha-entity-picker");
-    currentPicker.label = "Strom (A) – entity_current";
-    currentPicker.hass = this._hass;
-    currentPicker.value = cfg.entity_current || "";
-    currentPicker.includeDomains = ["sensor"];
-    currentPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        entity_current: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    container.appendChild(currentPicker);
+    // entity_current (Pflicht, Sensor)
+    container.appendChild(
+      makeSelect(
+        "Strom (A) – entity_current (sensor)",
+        "entity_current",
+        (id) => id.startsWith("sensor.")
+      )
+    );
 
-    // Zeile: Session-Energie + Status
+    // Zeile: Session-Energie + Status (Sensoren)
     const row1 = document.createElement("div");
     row1.classList.add("row");
-
-    const sessionPicker = document.createElement("ha-entity-picker");
-    sessionPicker.label = "Session-Energie (kWh) – entity_session_energy";
-    sessionPicker.hass = this._hass;
-    sessionPicker.value = cfg.entity_session_energy || "";
-    sessionPicker.includeDomains = ["sensor"];
-    sessionPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        entity_session_energy: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row1.appendChild(sessionPicker);
-
-    const statusPicker = document.createElement("ha-entity-picker");
-    statusPicker.label = "Status – entity_status (optional)";
-    statusPicker.hass = this._hass;
-    statusPicker.value = cfg.entity_status || "";
-    statusPicker.includeDomains = ["sensor"];
-    statusPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        entity_status: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row1.appendChild(statusPicker);
-
+    row1.appendChild(
+      makeSelect(
+        "Session-Energie (kWh) – entity_session_energy",
+        "entity_session_energy",
+        (id) => id.startsWith("sensor.")
+      )
+    );
+    row1.appendChild(
+      makeSelect(
+        "Status – entity_status",
+        "entity_status",
+        (id) => id.startsWith("sensor.")
+      )
+    );
     container.appendChild(row1);
 
-    // Zeile: Stecker + Ladevorgang
+    // Zeile: Stecker + Ladevorgang (Binary-Sensoren)
     const row2 = document.createElement("div");
     row2.classList.add("row");
-
-    const plugPicker = document.createElement("ha-entity-picker");
-    plugPicker.label = "Stecker angesteckt – plugged_entity (binary_sensor)";
-    plugPicker.hass = this._hass;
-    plugPicker.value = cfg.plugged_entity || "";
-    plugPicker.includeDomains = ["binary_sensor"];
-    plugPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        plugged_entity: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row2.appendChild(plugPicker);
-
-    const chargingPicker = document.createElement("ha-entity-picker");
-    chargingPicker.label = "Ladevorgang aktiv – charging_entity (binary_sensor)";
-    chargingPicker.hass = this._hass;
-    chargingPicker.value = cfg.charging_entity || "";
-    chargingPicker.includeDomains = ["binary_sensor"];
-    chargingPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        charging_entity: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row2.appendChild(chargingPicker);
-
+    row2.appendChild(
+      makeSelect(
+        "Stecker angesteckt – plugged_entity (binary_sensor)",
+        "plugged_entity",
+        (id) => id.startsWith("binary_sensor.")
+      )
+    );
+    row2.appendChild(
+      makeSelect(
+        "Ladevorgang aktiv – charging_entity (binary_sensor)",
+        "charging_entity",
+        (id) => id.startsWith("binary_sensor.")
+      )
+    );
     container.appendChild(row2);
 
     // Zeile: Switch + Lock
     const row3 = document.createElement("div");
     row3.classList.add("row");
-
-    const switchPicker = document.createElement("ha-entity-picker");
-    switchPicker.label = "Laden Start/Stop – switch_entity";
-    switchPicker.hass = this._hass;
-    switchPicker.value = cfg.switch_entity || "";
-    switchPicker.includeDomains = ["switch"];
-    switchPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        switch_entity: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row3.appendChild(switchPicker);
-
-    const lockPicker = document.createElement("ha-entity-picker");
-    lockPicker.label = "Verriegelung – lock_entity";
-    lockPicker.hass = this._hass;
-    lockPicker.value = cfg.lock_entity || "";
-    lockPicker.includeDomains = ["lock"];
-    lockPicker.addEventListener("value-changed", (ev) => {
-      this._config = {
-        ...cfg,
-        lock_entity: ev.detail.value,
-      };
-      this._fireConfigChanged();
-    });
-    row3.appendChild(lockPicker);
-
+    row3.appendChild(
+      makeSelect(
+        "Laden Start/Stop – switch_entity (switch)",
+        "switch_entity",
+        (id) => id.startsWith("switch.")
+      )
+    );
+    row3.appendChild(
+      makeSelect(
+        "Verriegelung – lock_entity (lock)",
+        "lock_entity",
+        (id) => id.startsWith("lock.")
+      )
+    );
     container.appendChild(row3);
 
     root.appendChild(container);

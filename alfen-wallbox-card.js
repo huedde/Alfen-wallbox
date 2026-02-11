@@ -159,13 +159,17 @@ class AlfenWallboxCard extends HTMLElement {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          color: #ffffff;
           text-align: center;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          transition: background 0.3s ease, transform 0.2s ease;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+          transition: border-color 0.3s ease, transform 0.2s ease,
+            box-shadow 0.3s ease;
+          border: 4px solid #9ca3af; /* Standard: grau */
+          background: radial-gradient(circle at 50% 50%, #111827, #020617);
+          color: #f9fafb;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
         .alfen-wallbox-card .power-value {
           font-size: 22px;
@@ -269,21 +273,21 @@ class AlfenWallboxCard extends HTMLElement {
           cursor: default;
         }
 
-        /* Status-Farben für großen Kreis und Status-Chip */
+        /* Status-Farben für Ring und Status-Chip */
         .alfen-wallbox-card .status-idle .power-circle {
-          background: radial-gradient(circle at 30% 20%, #e5e7eb, #9ca3af);
+          border-color: #9ca3af; /* grau */
         }
         .alfen-wallbox-card .status-plugged .power-circle {
-          background: radial-gradient(circle at 30% 20%, #22c55e33, #16a34a66);
+          border-color: #22c55e; /* grün verbunden */
         }
         .alfen-wallbox-card .status-charging .power-circle {
-          background: radial-gradient(circle at 30% 20%, #22c55e, #16a34a);
+          border-color: #16a34a; /* grün laden */
         }
         .alfen-wallbox-card .status-error .power-circle {
-          background: radial-gradient(circle at 30% 20%, #ef4444, #b91c1c);
+          border-color: #ef4444; /* rot bei Fehler */
         }
         .alfen-wallbox-card .status-unknown .power-circle {
-          background: radial-gradient(circle at 30% 20%, #0ea5e9, #0369a1);
+          border-color: #0ea5e9; /* blau unbekannt */
         }
 
         .alfen-wallbox-card .status-idle .status-chip {

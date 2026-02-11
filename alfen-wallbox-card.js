@@ -461,8 +461,6 @@ class AlfenWallboxCardEditor extends HTMLElement {
   }
 
   _render() {
-    if (!this._hass || !this._config) return;
-
     if (this._root) {
       this._root.innerHTML = "";
     } else {
@@ -470,6 +468,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     }
 
     const root = this._root;
+    const cfg = this._config || {};
 
     const style = document.createElement("style");
     style.textContent = `
@@ -495,10 +494,10 @@ class AlfenWallboxCardEditor extends HTMLElement {
     // Name
     const nameInput = document.createElement("paper-input");
     nameInput.label = "Name";
-    nameInput.value = this._config.name || "";
+    nameInput.value = cfg.name || "";
     nameInput.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         name: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -509,11 +508,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const currentPicker = document.createElement("ha-entity-picker");
     currentPicker.label = "Strom (A) – entity_current";
     currentPicker.hass = this._hass;
-    currentPicker.value = this._config.entity_current || "";
+    currentPicker.value = cfg.entity_current || "";
     currentPicker.includeDomains = ["sensor"];
     currentPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         entity_current: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -527,11 +526,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const sessionPicker = document.createElement("ha-entity-picker");
     sessionPicker.label = "Session-Energie (kWh) – entity_session_energy";
     sessionPicker.hass = this._hass;
-    sessionPicker.value = this._config.entity_session_energy || "";
+    sessionPicker.value = cfg.entity_session_energy || "";
     sessionPicker.includeDomains = ["sensor"];
     sessionPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         entity_session_energy: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -541,11 +540,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const statusPicker = document.createElement("ha-entity-picker");
     statusPicker.label = "Status – entity_status (optional)";
     statusPicker.hass = this._hass;
-    statusPicker.value = this._config.entity_status || "";
+    statusPicker.value = cfg.entity_status || "";
     statusPicker.includeDomains = ["sensor"];
     statusPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         entity_status: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -561,11 +560,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const plugPicker = document.createElement("ha-entity-picker");
     plugPicker.label = "Stecker angesteckt – plugged_entity (binary_sensor)";
     plugPicker.hass = this._hass;
-    plugPicker.value = this._config.plugged_entity || "";
+    plugPicker.value = cfg.plugged_entity || "";
     plugPicker.includeDomains = ["binary_sensor"];
     plugPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         plugged_entity: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -575,11 +574,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const chargingPicker = document.createElement("ha-entity-picker");
     chargingPicker.label = "Ladevorgang aktiv – charging_entity (binary_sensor)";
     chargingPicker.hass = this._hass;
-    chargingPicker.value = this._config.charging_entity || "";
+    chargingPicker.value = cfg.charging_entity || "";
     chargingPicker.includeDomains = ["binary_sensor"];
     chargingPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         charging_entity: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -595,11 +594,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const switchPicker = document.createElement("ha-entity-picker");
     switchPicker.label = "Laden Start/Stop – switch_entity";
     switchPicker.hass = this._hass;
-    switchPicker.value = this._config.switch_entity || "";
+    switchPicker.value = cfg.switch_entity || "";
     switchPicker.includeDomains = ["switch"];
     switchPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         switch_entity: ev.detail.value,
       };
       this._fireConfigChanged();
@@ -609,11 +608,11 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const lockPicker = document.createElement("ha-entity-picker");
     lockPicker.label = "Verriegelung – lock_entity";
     lockPicker.hass = this._hass;
-    lockPicker.value = this._config.lock_entity || "";
+    lockPicker.value = cfg.lock_entity || "";
     lockPicker.includeDomains = ["lock"];
     lockPicker.addEventListener("value-changed", (ev) => {
       this._config = {
-        ...this._config,
+        ...cfg,
         lock_entity: ev.detail.value,
       };
       this._fireConfigChanged();

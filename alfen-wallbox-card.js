@@ -96,6 +96,10 @@ class AlfenWallboxCard extends HTMLElement {
     const pluggedOn = isTruthy(pluggedState);
     const chargingOn = isTruthy(chargingState);
 
+    // Konfigurierbare Farben (optional)
+    const colorOnlineOn = cfg.color_online_on || null;
+    const colorChargingOn = cfg.color_charging_on || null;
+
     // Status oben rechts
     let statusText = "Bereit";
     let statusClass = "status-idle";
@@ -372,12 +376,20 @@ class AlfenWallboxCard extends HTMLElement {
               cfg.online_entity
                 ? `<span class="chip ${
                     onlineOn ? "chip-status-on" : "chip-status-off"
-                  }">${onlineOn ? "Online" : "Offline"}</span>`
+                  }" ${
+                    onlineOn && colorOnlineOn
+                      ? `style="background:${colorOnlineOn};border-color:${colorOnlineOn};color:#ffffff;"`
+                      : ""
+                  }>${onlineOn ? "Online" : "Offline"}</span>`
                 : ""
             }
             ${
               cfg.charging_entity
-                ? `<span class="chip ${chargeChipClass}">${chargeChipText}</span>`
+                ? `<span class="chip ${chargeChipClass}" ${
+                    chargingOn && colorChargingOn
+                      ? `style="background:${colorChargingOn};border-color:${colorChargingOn};color:#ffffff;"`
+                      : ""
+                  }>${chargeChipText}</span>`
                 : ""
             }
           </div>
@@ -512,14 +524,62 @@ class AlfenWallboxCardEditor extends HTMLElement {
       return wrapper;
     };
 
+    const makeColorInput = (label, key) => {
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("field");
+
+      const lab = document.createElement("label");
+      lab.textContent = label;
+      lab.style.display = "block";
+      lab.style.fontSize = "12px";
+      lab.style.marginBottom = "2px";
+
+      const input = document.createElement("input");
+      input.type = "color";
+      input.style.width = "60px";
+      input.style.height = "30px";
+      input.style.padding = "0";
+      input.style.border = "none";
+      input.style.background = "transparent";
+      input.value = cfg[key] || "#2563eb";
+
+      input.addEventListener("change", (ev) => {
+        this._config = {
+          ...this._config,
+          [key]: ev.target.value || undefined,
+        };
+        this._fireConfigChanged();
+      });
+
+      wrapper.appendChild(lab);
+      wrapper.appendChild(input);
+      return wrapper;
+    };
+
     const style = document.createElement("style");
     style.textContent = `
       .card-editor {
-        padding: 8px 12px 12px;
+        padding: 12px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        font-size: 13px;
+      }
+      .section {
+        border-radius: 12px;
+        border: 1px solid var(--divider-color);
+        padding: 10px 12px 12px;
         display: flex;
         flex-direction: column;
         gap: 8px;
-        font-size: 13px;
+        background: rgba(15, 23, 42, 0.35);
+      }
+      .section-title {
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0.85;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
       .row {
         display: flex;
@@ -534,7 +594,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const container = document.createElement("div");
     container.classList.add("card-editor");
 
-    // Name
+    // Abschnitt: Allgemein
+    const sectionGeneral = document.createElement("div");
+    sectionGeneral.classList.add("section");
+    const titleGeneral = document.createElement("div");
+    titleGeneral.classList.add("section-title");
+    titleGeneral.textContent = "Allgemein";
+    sectionGeneral.appendChild(titleGeneral);
+
     const nameField = document.createElement("div");
     nameField.classList.add("field");
     const nameLabel = document.createElement("label");
@@ -551,8 +618,6 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameInput.style.borderRadius = "4px";
     nameInput.style.border = "1px solid var(--divider-color)";
     nameInput.value = cfg.name || "";
-    // Nur bei "change" statt bei jedem Tastendruck neu konfigurieren,
-    // damit der Fokus im Feld bleibt.
     nameInput.addEventListener("change", (ev) => {
       this._config = {
         ...this._config,
@@ -562,10 +627,9 @@ class AlfenWallboxCardEditor extends HTMLElement {
     });
     nameField.appendChild(nameLabel);
     nameField.appendChild(nameInput);
-    container.appendChild(nameField);
+    sectionGeneral.appendChild(nameField);
 
-    // entity_current
-    container.appendChild(
+    sectionGeneral.appendChild(
       makeSelect(
         "Strom (A) – entity_current (sensor)",
         "entity_current",
@@ -573,12 +637,21 @@ class AlfenWallboxCardEditor extends HTMLElement {
       )
     );
 
-    // Session-Energie + Status
+    container.appendChild(sectionGeneral);
+
+    // Abschnitt: Messwerte
+    const sectionMetrics = document.createElement("div");
+    sectionMetrics.classList.add("section");
+    const titleMetrics = document.createElement("div");
+    titleMetrics.classList.add("section-title");
+    titleMetrics.textContent = "Messwerte";
+    sectionMetrics.appendChild(titleMetrics);
+
     const row1 = document.createElement("div");
     row1.classList.add("row");
     row1.appendChild(
       makeSelect(
-        "Session-Energie (kWh) – entity_session_energy",
+        "Aktuelle Leistung (W) – entity_session_energy",
         "entity_session_energy",
         (id) => id.startsWith("sensor.")
       )
@@ -590,9 +663,8 @@ class AlfenWallboxCardEditor extends HTMLElement {
         (id) => id.startsWith("sensor.")
       )
     );
-    container.appendChild(row1);
+    sectionMetrics.appendChild(row1);
 
-    // Vorgabe Ladestrom – eigene Entität
     const rowSet = document.createElement("div");
     rowSet.classList.add("row");
     rowSet.appendChild(
@@ -602,9 +674,18 @@ class AlfenWallboxCardEditor extends HTMLElement {
         (id) => id.startsWith("sensor.")
       )
     );
-    container.appendChild(rowSet);
+    sectionMetrics.appendChild(rowSet);
 
-    // Stecker + Ladevorgang
+    container.appendChild(sectionMetrics);
+
+    // Abschnitt: Status & Steuerung
+    const sectionStatus = document.createElement("div");
+    sectionStatus.classList.add("section");
+    const titleStatus = document.createElement("div");
+    titleStatus.classList.add("section-title");
+    titleStatus.textContent = "Status & Steuerung";
+    sectionStatus.appendChild(titleStatus);
+
     const row2 = document.createElement("div");
     row2.classList.add("row");
     row2.appendChild(
@@ -621,9 +702,8 @@ class AlfenWallboxCardEditor extends HTMLElement {
         (id) => id.startsWith("sensor.")
       )
     );
-    container.appendChild(row2);
+    sectionStatus.appendChild(row2);
 
-    // Switch + Online-Status
     const row3 = document.createElement("div");
     row3.classList.add("row");
     row3.appendChild(
@@ -640,7 +720,29 @@ class AlfenWallboxCardEditor extends HTMLElement {
         (id) => id.startsWith("sensor.")
       )
     );
-    container.appendChild(row3);
+    sectionStatus.appendChild(row3);
+
+    container.appendChild(sectionStatus);
+
+    // Abschnitt: Farben
+    const sectionColors = document.createElement("div");
+    sectionColors.classList.add("section");
+    const titleColors = document.createElement("div");
+    titleColors.classList.add("section-title");
+    titleColors.textContent = "Farben (optional)";
+    sectionColors.appendChild(titleColors);
+
+    const rowColors = document.createElement("div");
+    rowColors.classList.add("row");
+    rowColors.appendChild(
+      makeColorInput("Online aktiv – Farbe", "color_online_on")
+    );
+    rowColors.appendChild(
+      makeColorInput("Ladevorgang aktiv – Farbe", "color_charging_on")
+    );
+    sectionColors.appendChild(rowColors);
+
+    container.appendChild(sectionColors);
 
     root.appendChild(container);
   }

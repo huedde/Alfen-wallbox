@@ -60,14 +60,21 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- A"
         : `${rawCurrentCircle} A`;
 
-    // Detail: Aktuelle Leistung (z.B. kW) – du kannst hier einen passenden Sensor wählen
+    // Detail: Aktuelle Leistung – Sensor liefert Watt, Anzeige in kW
     const rawSessionEnergy = sessionEnergyState ? sessionEnergyState.state : null;
-    const sessionDisplay =
-      !rawSessionEnergy ||
-      rawSessionEnergy === "unknown" ||
-      rawSessionEnergy === "unavailable"
-        ? "- kWh"
-        : `${rawSessionEnergy} kWh`;
+    let sessionDisplay = "- kW";
+    if (
+      rawSessionEnergy !== null &&
+      rawSessionEnergy !== undefined &&
+      rawSessionEnergy !== "unknown" &&
+      rawSessionEnergy !== "unavailable"
+    ) {
+      const w = Number(rawSessionEnergy);
+      if (!Number.isNaN(w)) {
+        const kw = w / 1000;
+        sessionDisplay = `${kw.toFixed(1)} kW`;
+      }
+    }
 
     // Detail: Vorgabe Ladestrom – eigene Entität, unabhängig vom Kreis
     const rawSetCurrent = setCurrentState ? setCurrentState.state : null;

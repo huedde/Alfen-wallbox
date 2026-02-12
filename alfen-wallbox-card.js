@@ -99,6 +99,7 @@ class AlfenWallboxCard extends HTMLElement {
     // Konfigurierbare Farben (optional)
     const colorOnlineOn = cfg.color_online_on || null;
     const colorChargingOn = cfg.color_charging_on || null;
+    const colorPluggedOn = cfg.color_plugged_on || null;
 
     // Status oben rechts
     let statusText = "Bereit";
@@ -369,7 +370,11 @@ class AlfenWallboxCard extends HTMLElement {
           <div class="chips">
             ${
               cfg.plugged_entity
-                ? `<span class="chip ${plugChipClass}">${plugChipText}</span>`
+                ? `<span class="chip ${plugChipClass}" ${
+                    pluggedOn && colorPluggedOn
+                      ? `style="background:${colorPluggedOn};border-color:${colorPluggedOn};color:#ffffff;"`
+                      : ""
+                  }>${plugChipText}</span>`
                 : ""
             }
             ${
@@ -701,17 +706,13 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const row3 = document.createElement("div");
     row3.classList.add("row");
     row3.appendChild(
-      makeSelect(
-        "Laden Start/Stop",
-        "switch_entity",
-        (id) => id.startsWith("switch.")
+      makeSelect("Laden Start/Stop", "switch_entity", (id) =>
+        id.startsWith("sensor.")
       )
     );
     row3.appendChild(
-      makeSelect(
-        "Online-Status",
-        "online_entity",
-        (id) => id.startsWith("sensor.")
+      makeSelect("Online-Status", "online_entity", (id) =>
+        id.startsWith("sensor.")
       )
     );
     sectionStatus.appendChild(row3);
@@ -726,15 +727,22 @@ class AlfenWallboxCardEditor extends HTMLElement {
     titleColors.textContent = "Farben (optional)";
     sectionColors.appendChild(titleColors);
 
-    const rowColors = document.createElement("div");
-    rowColors.classList.add("row");
-    rowColors.appendChild(
+    const rowColors1 = document.createElement("div");
+    rowColors1.classList.add("row");
+    rowColors1.appendChild(
+      makeColorInput("Stecker angesteckt – Farbe", "color_plugged_on")
+    );
+    rowColors1.appendChild(
       makeColorInput("Online aktiv – Farbe", "color_online_on")
     );
-    rowColors.appendChild(
+    sectionColors.appendChild(rowColors1);
+
+    const rowColors2 = document.createElement("div");
+    rowColors2.classList.add("row");
+    rowColors2.appendChild(
       makeColorInput("Ladevorgang aktiv – Farbe", "color_charging_on")
     );
-    sectionColors.appendChild(rowColors);
+    sectionColors.appendChild(rowColors2);
 
     container.appendChild(sectionColors);
 

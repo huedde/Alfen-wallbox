@@ -611,12 +611,6 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameLabel.style.marginBottom = "2px";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.style.width = "100%";
-    nameInput.style.padding = "4px 6px";
-    nameInput.style.background = "var(--card-background-color)";
-    nameInput.style.color = "var(--primary-text-color)";
-    nameInput.style.borderRadius = "4px";
-    nameInput.style.border = "1px solid var(--divider-color)";
     nameInput.value = cfg.name || "";
     nameInput.addEventListener("change", (ev) => {
       this._config = {
@@ -631,7 +625,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
 
     sectionGeneral.appendChild(
       makeSelect(
-        "Strom (A) – entity_current (sensor)",
+        "Aktueller Strom – entity_current",
         "entity_current",
         (id) => id.startsWith("sensor.")
       )
@@ -651,14 +645,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     row1.classList.add("row");
     row1.appendChild(
       makeSelect(
-        "Aktuelle Leistung (W) – entity_session_energy",
+        "Aktuelle Leistung – entity_session_energy",
         "entity_session_energy",
         (id) => id.startsWith("sensor.")
       )
     );
     row1.appendChild(
       makeSelect(
-        "Status – entity_status (sensor)",
+        "Wallboxname – entity_status",
         "entity_status",
         (id) => id.startsWith("sensor.")
       )
@@ -669,7 +663,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     rowSet.classList.add("row");
     rowSet.appendChild(
       makeSelect(
-        "Vorgabe Ladestrom (A) – entity_set_current (sensor)",
+        "Vorgabe Ladestrom – entity_set_current",
         "entity_set_current",
         (id) => id.startsWith("sensor.")
       )
@@ -690,14 +684,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     row2.classList.add("row");
     row2.appendChild(
       makeSelect(
-        "Stecker angesteckt – plugged_entity (sensor)",
+        "Stecker angesteckt",
         "plugged_entity",
         (id) => id.startsWith("sensor.")
       )
     );
     row2.appendChild(
       makeSelect(
-        "Ladevorgang aktiv – charging_entity (sensor)",
+        "Ladevorgang aktiv",
         "charging_entity",
         (id) => id.startsWith("sensor.")
       )
@@ -708,14 +702,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     row3.classList.add("row");
     row3.appendChild(
       makeSelect(
-        "Laden Start/Stop – switch_entity (switch)",
+        "Laden Start/Stop",
         "switch_entity",
         (id) => id.startsWith("switch.")
       )
     );
     row3.appendChild(
       makeSelect(
-        "Online-Status – online_entity (sensor)",
+        "Online-Status",
         "online_entity",
         (id) => id.startsWith("sensor.")
       )

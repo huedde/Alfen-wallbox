@@ -551,7 +551,9 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameInput.style.borderRadius = "4px";
     nameInput.style.border = "1px solid var(--divider-color)";
     nameInput.value = cfg.name || "";
-    nameInput.addEventListener("input", (ev) => {
+    // Nur bei "change" statt bei jedem Tastendruck neu konfigurieren,
+    // damit der Fokus im Feld bleibt.
+    nameInput.addEventListener("change", (ev) => {
       this._config = {
         ...this._config,
         name: ev.target.value,

@@ -45,7 +45,7 @@ class AlfenWallboxCard extends HTMLElement {
     const currentState = getState(cfg.entity_current);
     const statusState = getState(cfg.entity_status);
     const sessionEnergyState = getState(cfg.entity_session_energy);
-    const lockState = getState(cfg.lock_entity);
+    const onlineState = getState(cfg.online_entity);
     const switchState = getState(cfg.switch_entity);
     const pluggedState = getState(cfg.plugged_entity);
     const chargingState = getState(cfg.charging_entity);
@@ -82,13 +82,13 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- A"
         : `${rawCurrent} A`;
 
-    // Detail: Verriegelung
-    const locked = lockState && lockState.state === "locked";
-    const lockDisplay = !lockState
+    // Detail: Online-Status (z.B. Backoffice connected)
+    const onlineOn = isTruthy(onlineState);
+    const onlineDisplay = !onlineState
       ? "-"
-      : locked
-      ? "Verriegelt"
-      : "Entriegelt";
+      : onlineOn
+      ? "Online"
+      : "Offline";
 
     const pluggedOn = isTruthy(pluggedState);
     const chargingOn = isTruthy(chargingState);
@@ -124,7 +124,7 @@ class AlfenWallboxCard extends HTMLElement {
     }
 
     // Chips
-    const plugChipText = pluggedOn ? "Stecker angesteckt" : "Stecker frei";
+    const plugChipText = pluggedOn ? "Besetzt" : "Frei";
     const plugChipClass = pluggedOn ? "chip-on" : "chip-off";
 
     const chargeChipText = chargingOn
@@ -132,8 +132,8 @@ class AlfenWallboxCard extends HTMLElement {
       : "Ladevorgang inaktiv";
     const chargeChipClass = chargingOn ? "chip-on" : "chip-off";
 
-    // Buttons
-    const switchOn = switchState && switchState.state === "on";
+    // Buttons (nur Laden Start/Stop; Verriegelung ist kein Lock)
+    const switchOn = switchState && isTruthy(switchState);
     const switchLabel = switchOn ? "Laden stoppen" : "Laden starten";
 
     const lockedNow = locked;
@@ -355,12 +355,12 @@ class AlfenWallboxCard extends HTMLElement {
               <span class="value">${sessionDisplay}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Stromstärke</span>
+              <span class="label">Vorgabe Ladestrom</span>
               <span class="value">${currentDisplay}</span>
             </div>
             <div class="detail-row">
-              <span class="label">Verriegelung</span>
-              <span class="value">${lockDisplay}</span>
+              <span class="label">Online</span>
+              <span class="value">${onlineDisplay}</span>
             </div>
           </div>
 
@@ -368,6 +368,13 @@ class AlfenWallboxCard extends HTMLElement {
             ${
               cfg.plugged_entity
                 ? `<span class="chip ${plugChipClass}">${plugChipText}</span>`
+                : ""
+            }
+            ${
+              cfg.online_entity
+                ? `<span class="chip ${
+                    onlineOn ? "chip-on" : "chip-off"
+                  }">${onlineOn ? "Online" : "Offline"}</span>`
                 : ""
             }
             ${
@@ -390,16 +397,6 @@ class AlfenWallboxCard extends HTMLElement {
                    </button>`
                 : ""
             }
-            ${
-              cfg.lock_entity
-                ? `<button class="btn btn-secondary" data-action="toggle_lock">
-                     <ha-icon icon="${
-                       lockedNow ? "mdi:lock-open-variant" : "mdi:lock"
-                     }"></ha-icon>
-                     <span>${lockLabel}</span>
-                   </button>`
-                : ""
-            }
           </div>
         </div>
       </div>
@@ -414,21 +411,11 @@ class AlfenWallboxCard extends HTMLElement {
 
         if (action === "toggle_switch" && cfg.switch_entity) {
           const st = getState(cfg.switch_entity);
-          const isOn = st && st.state === "on";
+          const isOn = isTruthy(st);
           const [domain] = cfg.switch_entity.split(".");
           const service = isOn ? "turn_off" : "turn_on";
           this._hass.callService(domain, service, {
             entity_id: cfg.switch_entity,
-          });
-        }
-
-        if (action === "toggle_lock" && cfg.lock_entity) {
-          const st = getState(cfg.lock_entity);
-          const isLocked = st && st.state === "locked";
-          const [domain] = cfg.lock_entity.split(".");
-          const service = isLocked ? "unlock" : "lock";
-          this._hass.callService(domain, service, {
-            entity_id: cfg.lock_entity,
           });
         }
       });
@@ -624,7 +611,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     );
     container.appendChild(row2);
 
-    // Zeile: Switch + Lock
+    // Zeile: Switch + Online-Status
     const row3 = document.createElement("div");
     row3.classList.add("row");
     row3.appendChild(
@@ -636,9 +623,9 @@ class AlfenWallboxCardEditor extends HTMLElement {
     );
     row3.appendChild(
       makeSelect(
-        "Verriegelung – lock_entity (lock)",
-        "lock_entity",
-        (id) => id.startsWith("lock.")
+        "Online-Status – online_entity (sensor)",
+        "online_entity",
+        (id) => id.startsWith("sensor.")
       )
     );
     container.appendChild(row3);

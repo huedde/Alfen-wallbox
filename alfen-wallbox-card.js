@@ -98,8 +98,11 @@ class AlfenWallboxCard extends HTMLElement {
 
     // Konfigurierbare Farben (optional)
     const colorOnlineOn = cfg.color_online_on || null;
+    const colorOnlineOff = cfg.color_online_off || null;
     const colorChargingOn = cfg.color_charging_on || null;
+    const colorChargingOff = cfg.color_charging_off || null;
     const colorPluggedOn = cfg.color_plugged_on || null;
+    const colorPluggedOff = cfg.color_plugged_off || null;
 
     // Status oben rechts
     let statusText = "Bereit";
@@ -373,6 +376,8 @@ class AlfenWallboxCard extends HTMLElement {
                 ? `<span class="chip ${plugChipClass}" ${
                     pluggedOn && colorPluggedOn
                       ? `style="background:${colorPluggedOn};border-color:${colorPluggedOn};color:#ffffff;"`
+                      : !pluggedOn && colorPluggedOff
+                      ? `style="background:${colorPluggedOff};border-color:${colorPluggedOff};color:#ffffff;"`
                       : ""
                   }>${plugChipText}</span>`
                 : ""
@@ -384,6 +389,8 @@ class AlfenWallboxCard extends HTMLElement {
                   }" ${
                     onlineOn && colorOnlineOn
                       ? `style="background:${colorOnlineOn};border-color:${colorOnlineOn};color:#ffffff;"`
+                      : !onlineOn && colorOnlineOff
+                      ? `style="background:${colorOnlineOff};border-color:${colorOnlineOff};color:#ffffff;"`
                       : ""
                   }>${onlineOn ? "Online" : "Offline"}</span>`
                 : ""
@@ -393,6 +400,8 @@ class AlfenWallboxCard extends HTMLElement {
                 ? `<span class="chip ${chargeChipClass}" ${
                     chargingOn && colorChargingOn
                       ? `style="background:${colorChargingOn};border-color:${colorChargingOn};color:#ffffff;"`
+                      : !chargingOn && colorChargingOff
+                      ? `style="background:${colorChargingOff};border-color:${colorChargingOff};color:#ffffff;"`
                       : ""
                   }>${chargeChipText}</span>`
                 : ""
@@ -542,11 +551,8 @@ class AlfenWallboxCardEditor extends HTMLElement {
       const input = document.createElement("input");
       input.type = "color";
       input.style.width = "60px";
-      input.style.height = "30px";
-      input.style.padding = "0";
-      input.style.border = "none";
-      input.style.background = "transparent";
-      input.value = cfg[key] || "#2563eb";
+      input.style.height = "26px";
+      input.value = cfg[key] || "";
 
       input.addEventListener("change", (ev) => {
         this._config = {
@@ -730,19 +736,32 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const rowColors1 = document.createElement("div");
     rowColors1.classList.add("row");
     rowColors1.appendChild(
-      makeColorInput("Stecker angesteckt – Farbe", "color_plugged_on")
+      makeColorInput("Stecker angesteckt (AN)", "color_plugged_on")
     );
     rowColors1.appendChild(
-      makeColorInput("Online aktiv – Farbe", "color_online_on")
+      makeColorInput("Stecker angesteckt (AUS)", "color_plugged_off")
     );
     sectionColors.appendChild(rowColors1);
 
     const rowColors2 = document.createElement("div");
     rowColors2.classList.add("row");
     rowColors2.appendChild(
-      makeColorInput("Ladevorgang aktiv – Farbe", "color_charging_on")
+      makeColorInput("Online aktiv (AN)", "color_online_on")
+    );
+    rowColors2.appendChild(
+      makeColorInput("Online aktiv (AUS)", "color_online_off")
     );
     sectionColors.appendChild(rowColors2);
+
+    const rowColors3 = document.createElement("div");
+    rowColors3.classList.add("row");
+    rowColors3.appendChild(
+      makeColorInput("Ladevorgang aktiv (AN)", "color_charging_on")
+    );
+    rowColors3.appendChild(
+      makeColorInput("Ladevorgang aktiv (AUS)", "color_charging_off")
+    );
+    sectionColors.appendChild(rowColors3);
 
     container.appendChild(sectionColors);
 

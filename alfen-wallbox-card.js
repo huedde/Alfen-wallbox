@@ -656,14 +656,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     row1.classList.add("row");
     row1.appendChild(
       makeSelect(
-        "Aktuelle Leistung – entity_session_energy",
+        "Aktuelle Leistung",
         "entity_session_energy",
         (id) => id.startsWith("sensor.")
       )
     );
     row1.appendChild(
       makeSelect(
-        "Wallboxname – entity_status",
+        "Wallboxname",
         "entity_status",
         (id) => id.startsWith("sensor.")
       )
@@ -674,7 +674,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     rowSet.classList.add("row");
     rowSet.appendChild(
       makeSelect(
-        "Vorgabe Ladestrom – entity_set_current",
+        "Vorgabe Ladestrom",
         "entity_set_current",
         (id) => id.startsWith("sensor.")
       )

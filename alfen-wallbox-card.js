@@ -599,6 +599,31 @@ class AlfenWallboxCardEditor extends HTMLElement {
       .row > .field {
         flex: 1;
       }
+      .field label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 2px;
+        opacity: 0.9;
+      }
+      .field input[type="text"],
+      .field select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 4px 6px;
+        border-radius: 6px;
+        border: 1px solid var(--divider-color);
+        background: var(--card-background-color);
+        color: var(--primary-text-color);
+        font: inherit;
+      }
+      .field input[type="color"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1px;
+        border-radius: 6px;
+        border: 1px solid var(--divider-color);
+        background: var(--card-background-color);
+      }
     `;
     root.appendChild(style);
 

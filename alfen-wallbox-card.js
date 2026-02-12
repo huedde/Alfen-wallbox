@@ -6,16 +6,12 @@ class AlfenWallboxCard extends HTMLElement {
   static getStubConfig() {
     return {
       name: "Alfen Wallbox",
-      entity_current: ""
+      entity_current: "",
     };
   }
 
   setConfig(config) {
-    // entity_current wird im Editor gesetzt; wenn es fehlt,
-    // zeigen wir später einfach einen Hinweis in der Karte statt
-    // den gesamten Editor zu blockieren.
     this._config = { ...config };
-
     if (this.card) return;
 
     const card = document.createElement("ha-card");
@@ -33,7 +29,6 @@ class AlfenWallboxCard extends HTMLElement {
     const getState = (entityId) =>
       entityId && hass.states[entityId] ? hass.states[entityId] : null;
 
-    // Hilfsfunktion: viele Alfen-Werte kommen als sensor.* mit 0/1, true/false oder on/off
     const isTruthy = (stateObj) => {
       if (!stateObj || stateObj.state === undefined || stateObj.state === null) {
         return false;
@@ -55,7 +50,7 @@ class AlfenWallboxCard extends HTMLElement {
       (currentState && currentState.attributes.friendly_name) ||
       "Alfen Wallbox";
 
-    // --- Ampere für großen Kreis ---
+    // Kreis: aktueller Strom
     const rawCurrentCircle = currentState ? currentState.state : "unavailable";
     const currentCircleDisplay =
       !rawCurrentCircle ||
@@ -64,7 +59,7 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- A"
         : `${rawCurrentCircle} A`;
 
-    // Detail: Session-Energie
+    // Detail: Session-Energie (kWh)
     const rawSessionEnergy = sessionEnergyState ? sessionEnergyState.state : null;
     const sessionDisplay =
       !rawSessionEnergy ||
@@ -73,7 +68,8 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- kWh"
         : `${rawSessionEnergy} kWh`;
 
-    // Detail: Stromstärke (A) – gleiche Quelle wie Kreis
+    // Detail: Vorgabe Ladestrom (hier verwenden wir denselben Sensor wie im Kreis;
+    // wenn du später einen eigenen Vorgabe-Sensor hast, kannst du den hier eintragen)
     const rawCurrent = currentState ? currentState.state : null;
     const currentDisplay =
       !rawCurrent ||
@@ -82,7 +78,7 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- A"
         : `${rawCurrent} A`;
 
-    // Detail: Online-Status (z.B. Backoffice connected)
+    // Online-Status (z.B. Backoffice connected)
     const onlineOn = isTruthy(onlineState);
     const onlineDisplay = !onlineState
       ? "-"
@@ -93,7 +89,7 @@ class AlfenWallboxCard extends HTMLElement {
     const pluggedOn = isTruthy(pluggedState);
     const chargingOn = isTruthy(chargingState);
 
-    // Status-Text und Klasse
+    // Status oben rechts
     let statusText = "Bereit";
     let statusClass = "status-idle";
 
@@ -113,7 +109,6 @@ class AlfenWallboxCard extends HTMLElement {
         statusClass = "status-unknown";
       }
     } else {
-      // Fallback nur aus Steckern/Ladevorgang
       if (chargingOn) {
         statusText = "Lädt";
         statusClass = "status-charging";
@@ -132,14 +127,11 @@ class AlfenWallboxCard extends HTMLElement {
       : "Ladevorgang inaktiv";
     const chargeChipClass = chargingOn ? "chip-on" : "chip-off";
 
-    // Buttons (nur Laden Start/Stop; Verriegelung ist kein Lock)
+    // Button Laden Start/Stop
     const switchOn = switchState && isTruthy(switchState);
     const switchLabel = switchOn ? "Laden stoppen" : "Laden starten";
 
-    const lockedNow = locked;
-    const lockLabel = lockedNow ? "Entriegeln" : "Verriegeln";
-
-    // --- HTML ---
+    // HTML
     this.card.innerHTML = `
       <style>
         .alfen-wallbox-card .wrapper {
@@ -172,7 +164,7 @@ class AlfenWallboxCard extends HTMLElement {
           box-shadow: 0 4px 12px rgba(0,0,0,0.18);
           transition: border-color 0.3s ease, transform 0.2s ease,
             box-shadow 0.3s ease;
-          border: 4px solid #9ca3af; /* Standard: grau */
+          border: 4px solid #9ca3af;
           background: radial-gradient(circle at 50% 50%, #111827, #020617);
           color: #f9fafb;
         }
@@ -274,29 +266,21 @@ class AlfenWallboxCard extends HTMLElement {
         .alfen-wallbox-card .btn-primary.stop {
           background: #dc2626;
         }
-        .alfen-wallbox-card .btn-secondary {
-          background: rgba(148, 163, 184, 0.16);
-        }
-        .alfen-wallbox-card .btn:disabled {
-          opacity: 0.6;
-          cursor: default;
-        }
 
-        /* Status-Farben für Ring und Status-Chip */
         .alfen-wallbox-card .status-idle .power-circle {
-          border-color: #9ca3af; /* grau */
+          border-color: #9ca3af;
         }
         .alfen-wallbox-card .status-plugged .power-circle {
-          border-color: #22c55e; /* grün verbunden */
+          border-color: #22c55e;
         }
         .alfen-wallbox-card .status-charging .power-circle {
-          border-color: #16a34a; /* grün laden */
+          border-color: #16a34a;
         }
         .alfen-wallbox-card .status-error .power-circle {
-          border-color: #ef4444; /* rot bei Fehler */
+          border-color: #ef4444;
         }
         .alfen-wallbox-card .status-unknown .power-circle {
-          border-color: #0ea5e9; /* blau unbekannt */
+          border-color: #0ea5e9;
         }
 
         .alfen-wallbox-card .status-idle .status-chip {
@@ -402,20 +386,20 @@ class AlfenWallboxCard extends HTMLElement {
       </div>
     `;
 
-    // Button-Actions
+    // Button Actions
     const buttons = this.card.querySelectorAll("button[data-action]");
     buttons.forEach((btn) => {
       btn.addEventListener("click", (ev) => {
         const action = ev.currentTarget.getAttribute("data-action");
         if (!this._hass || !this._config) return;
 
-        if (action === "toggle_switch" && cfg.switch_entity) {
-          const st = getState(cfg.switch_entity);
+        if (action === "toggle_switch" && this._config.switch_entity) {
+          const st = getState(this._config.switch_entity);
           const isOn = isTruthy(st);
-          const [domain] = cfg.switch_entity.split(".");
+          const [domain] = this._config.switch_entity.split(".");
           const service = isOn ? "turn_off" : "turn_on";
           this._hass.callService(domain, service, {
-            entity_id: cfg.switch_entity,
+            entity_id: this._config.switch_entity,
           });
         }
       });
@@ -434,7 +418,7 @@ window.customCards.push({
   type: "alfen-wallbox-card",
   name: "Alfen Wallbox Card",
   description:
-    "Zeigt Strom (A), Status, Session-Energie, Verriegelung und Steuerung eines Alfen-Ladepunkts an."
+    "Zeigt Strom (A), Status, Session-Energie und Steuerung eines Alfen-Ladepunkts an.",
 });
 
 class AlfenWallboxCardEditor extends HTMLElement {
@@ -455,6 +439,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
 
   _render() {
     if (!this._hass) return;
+
     if (this._root) {
       this._root.innerHTML = "";
     } else {
@@ -463,8 +448,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
 
     const root = this._root;
     const cfg = this._config || {};
-
-    const entities = this._hass ? this._hass.states : {};
+    const entities = this._hass.states;
 
     const makeSelect = (label, key, filterFn) => {
       const wrapper = document.createElement("div");
@@ -503,7 +487,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
 
       select.addEventListener("change", (ev) => {
         this._config = {
-          ...cfg,
+          ...this._config,
           [key]: ev.target.value || undefined,
         };
         this._fireConfigChanged();
@@ -536,7 +520,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     const container = document.createElement("div");
     container.classList.add("card-editor");
 
-    // Name (einfaches Textfeld)
+    // Name
     const nameField = document.createElement("div");
     nameField.classList.add("field");
     const nameLabel = document.createElement("label");
@@ -555,7 +539,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameInput.value = cfg.name || "";
     nameInput.addEventListener("input", (ev) => {
       this._config = {
-        ...cfg,
+        ...this._config,
         name: ev.target.value,
       };
       this._fireConfigChanged();
@@ -564,7 +548,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameField.appendChild(nameInput);
     container.appendChild(nameField);
 
-    // entity_current (Pflicht, Sensor)
+    // entity_current
     container.appendChild(
       makeSelect(
         "Strom (A) – entity_current (sensor)",
@@ -573,7 +557,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
       )
     );
 
-    // Zeile: Session-Energie + Status (Sensoren)
+    // Session-Energie + Status
     const row1 = document.createElement("div");
     row1.classList.add("row");
     row1.appendChild(
@@ -585,14 +569,14 @@ class AlfenWallboxCardEditor extends HTMLElement {
     );
     row1.appendChild(
       makeSelect(
-        "Status – entity_status",
+        "Status – entity_status (sensor)",
         "entity_status",
         (id) => id.startsWith("sensor.")
       )
     );
     container.appendChild(row1);
 
-    // Zeile: Stecker + Ladevorgang (bei Alfen ebenfalls als sensor.* abgebildet)
+    // Stecker + Ladevorgang
     const row2 = document.createElement("div");
     row2.classList.add("row");
     row2.appendChild(
@@ -611,7 +595,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
     );
     container.appendChild(row2);
 
-    // Zeile: Switch + Online-Status
+    // Switch + Online-Status
     const row3 = document.createElement("div");
     row3.classList.add("row");
     row3.appendChild(
@@ -644,4 +628,3 @@ class AlfenWallboxCardEditor extends HTMLElement {
 }
 
 customElements.define("alfen-wallbox-card-editor", AlfenWallboxCardEditor);
-

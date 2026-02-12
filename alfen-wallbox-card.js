@@ -40,6 +40,7 @@ class AlfenWallboxCard extends HTMLElement {
     const currentState = getState(cfg.entity_current);
     const statusState = getState(cfg.entity_status);
     const sessionEnergyState = getState(cfg.entity_session_energy);
+    const setCurrentState = getState(cfg.entity_set_current);
     const onlineState = getState(cfg.online_entity);
     const switchState = getState(cfg.switch_entity);
     const pluggedState = getState(cfg.plugged_entity);
@@ -59,7 +60,7 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- A"
         : `${rawCurrentCircle} A`;
 
-    // Detail: Session-Energie (kWh)
+    // Detail: Aktuelle Leistung (z.B. kW) – du kannst hier einen passenden Sensor wählen
     const rawSessionEnergy = sessionEnergyState ? sessionEnergyState.state : null;
     const sessionDisplay =
       !rawSessionEnergy ||
@@ -68,15 +69,14 @@ class AlfenWallboxCard extends HTMLElement {
         ? "- kWh"
         : `${rawSessionEnergy} kWh`;
 
-    // Detail: Vorgabe Ladestrom (hier verwenden wir denselben Sensor wie im Kreis;
-    // wenn du später einen eigenen Vorgabe-Sensor hast, kannst du den hier eintragen)
-    const rawCurrent = currentState ? currentState.state : null;
-    const currentDisplay =
-      !rawCurrent ||
-      rawCurrent === "unknown" ||
-      rawCurrent === "unavailable"
+    // Detail: Vorgabe Ladestrom – eigene Entität, unabhängig vom Kreis
+    const rawSetCurrent = setCurrentState ? setCurrentState.state : null;
+    const setCurrentDisplay =
+      !rawSetCurrent ||
+      rawSetCurrent === "unknown" ||
+      rawSetCurrent === "unavailable"
         ? "- A"
-        : `${rawCurrent} A`;
+        : `${rawSetCurrent} A`;
 
     // Online-Status (z.B. Backoffice connected)
     const onlineOn = isTruthy(onlineState);
@@ -125,7 +125,7 @@ class AlfenWallboxCard extends HTMLElement {
     const chargeChipText = chargingOn
       ? "Ladevorgang aktiv"
       : "Ladevorgang inaktiv";
-    const chargeChipClass = chargingOn ? "chip-on" : "chip-off";
+    const chargeChipClass = chargingOn ? "chip-status-on" : "chip-status-off";
 
     // Button Laden Start/Stop
     const switchOn = switchState && isTruthy(switchState);
@@ -240,6 +240,17 @@ class AlfenWallboxCard extends HTMLElement {
           border-color: rgba(148, 163, 184, 0.7);
           color: #475569;
         }
+        /* Blaue Status-Chips (z.B. Online, Ladevorgang aktiv) */
+        .alfen-wallbox-card .chip-status-on {
+          background: rgba(59, 130, 246, 0.18);
+          border-color: rgba(37, 99, 235, 0.9);
+          color: #1d4ed8;
+        }
+        .alfen-wallbox-card .chip-status-off {
+          background: rgba(148, 163, 184, 0.16);
+          border-color: rgba(148, 163, 184, 0.7);
+          color: #9ca3af;
+        }
         .alfen-wallbox-card .actions {
           margin-top: 6px;
           display: flex;
@@ -335,16 +346,12 @@ class AlfenWallboxCard extends HTMLElement {
 
           <div class="details">
             <div class="detail-row">
-              <span class="label">Session-Energie</span>
+              <span class="label">Aktuelle Leistung</span>
               <span class="value">${sessionDisplay}</span>
             </div>
             <div class="detail-row">
               <span class="label">Vorgabe Ladestrom</span>
-              <span class="value">${currentDisplay}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Online</span>
-              <span class="value">${onlineDisplay}</span>
+              <span class="value">${setCurrentDisplay}</span>
             </div>
           </div>
 
@@ -357,7 +364,7 @@ class AlfenWallboxCard extends HTMLElement {
             ${
               cfg.online_entity
                 ? `<span class="chip ${
-                    onlineOn ? "chip-on" : "chip-off"
+                    onlineOn ? "chip-status-on" : "chip-status-off"
                   }">${onlineOn ? "Online" : "Offline"}</span>`
                 : ""
             }
@@ -575,6 +582,18 @@ class AlfenWallboxCardEditor extends HTMLElement {
       )
     );
     container.appendChild(row1);
+
+    // Vorgabe Ladestrom – eigene Entität
+    const rowSet = document.createElement("div");
+    rowSet.classList.add("row");
+    rowSet.appendChild(
+      makeSelect(
+        "Vorgabe Ladestrom (A) – entity_set_current (sensor)",
+        "entity_set_current",
+        (id) => id.startsWith("sensor.")
+      )
+    );
+    container.appendChild(rowSet);
 
     // Stecker + Ladevorgang
     const row2 = document.createElement("div");

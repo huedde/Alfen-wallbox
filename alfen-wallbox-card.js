@@ -350,14 +350,14 @@ class AlfenWallboxCard extends HTMLElement {
       </style>
       <div class="wrapper ${statusClass}">
         <div class="left">
-          <div class="power-circle">
-            <div class="power-value" ${
+          <div class="power-circle" ${
               currentIsActive && colorCurrentActive
                 ? `style="color:${colorCurrentActive};"`
                 : !currentIsActive && colorCurrentIdle
                 ? `style="color:${colorCurrentIdle};"`
                 : ""
-            }>${currentCircleDisplay}</div>
+            }>
+            <div class="power-value">${currentCircleDisplay}</div>
             <div class="power-label">Aktueller Strom</div>
           </div>
         </div>

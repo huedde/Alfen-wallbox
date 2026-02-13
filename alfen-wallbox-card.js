@@ -157,10 +157,10 @@ class AlfenWallboxCard extends HTMLElement {
     this.card.innerHTML = `
       <style>
         .alfen-wallbox-card .wrapper {
-          padding: 14px 16px;
+          padding: 12px;
           display: grid;
           grid-template-columns: auto 1fr;
-          gap: 12px 16px;
+          gap: 8px 10px;
           align-items: center;
           min-width: 0;
           overflow: hidden;
@@ -179,8 +179,8 @@ class AlfenWallboxCard extends HTMLElement {
           overflow: hidden;
         }
         .alfen-wallbox-card .power-circle {
-          width: clamp(80px, 22vw, 110px);
-          height: clamp(80px, 22vw, 110px);
+          width: 90px;
+          height: 90px;
           border-radius: 50%;
           display: flex;
           flex-direction: column;
@@ -198,12 +198,12 @@ class AlfenWallboxCard extends HTMLElement {
           box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
         .alfen-wallbox-card .power-value {
-          font-size: clamp(16px, 4.5vw, 22px);
+          font-size: 18px;
           font-weight: 700;
           color: inherit !important;
         }
         .alfen-wallbox-card .power-label {
-          font-size: clamp(10px, 2.5vw, 12px);
+          font-size: 10px;
           opacity: 0.85;
           color: inherit !important;
         }
@@ -215,39 +215,48 @@ class AlfenWallboxCard extends HTMLElement {
         }
         .alfen-wallbox-card .title {
           font-weight: 600;
-          font-size: clamp(13px, 3.5vw, 16px);
+          font-size: 14px;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
           min-width: 0;
           overflow: hidden;
+        }
+        .alfen-wallbox-card .title span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .alfen-wallbox-card .title-icon ha-icon {
           --mdc-icon-size: 20px;
         }
         .alfen-wallbox-card .status-chip {
-          padding: 2px 10px;
+          padding: 2px 8px;
           border-radius: 999px;
-          font-size: 12px;
+          font-size: 10px;
           font-weight: 500;
           white-space: nowrap;
+          flex-shrink: 0;
         }
         .alfen-wallbox-card .details {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          font-size: clamp(12px, 3vw, 14px);
+          gap: 2px;
+          font-size: 12px;
           min-width: 0;
         }
         .alfen-wallbox-card .detail-row {
           display: flex;
           justify-content: space-between;
+          gap: 4px;
         }
         .alfen-wallbox-card .label {
           opacity: 0.8;
         }
         .alfen-wallbox-card .value {
           font-weight: 500;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
         .alfen-wallbox-card .chips {
           display: flex;
@@ -255,10 +264,11 @@ class AlfenWallboxCard extends HTMLElement {
           gap: 4px;
         }
         .alfen-wallbox-card .chip {
-          padding: 2px 8px;
+          padding: 2px 6px;
           border-radius: 999px;
-          font-size: 11px;
+          font-size: 10px;
           border: 1px solid rgba(0,0,0,0.15);
+          white-space: nowrap;
         }
         .alfen-wallbox-card .chip-on {
           background: rgba(34, 197, 94, 0.12);
@@ -342,31 +352,11 @@ class AlfenWallboxCard extends HTMLElement {
           color: #1d4ed8;
         }
 
-        @media (max-width: 350px) {
-          .alfen-wallbox-card .wrapper {
-            grid-template-columns: 1fr;
-            justify-items: center;
-            padding: 12px;
-            gap: 10px;
-          }
-          .alfen-wallbox-card .right {
-            width: 100%;
-          }
-          .alfen-wallbox-card .title-row {
-            flex-direction: column;
-            align-items: center;
-          }
-          .alfen-wallbox-card .details {
-            text-align: center;
-          }
-          .alfen-wallbox-card .detail-row {
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-          }
-          .alfen-wallbox-card .chips {
-            justify-content: center;
-          }
+        .alfen-wallbox-card .title-row {
+          flex-wrap: wrap;
+        }
+        .alfen-wallbox-card .chips {
+          flex-wrap: wrap;
         }
       </style>
       <div class="wrapper ${statusClass}">

@@ -59,6 +59,11 @@ class AlfenWallboxCard extends HTMLElement {
       rawCurrentCircle === "unavailable"
         ? "- A"
         : `${rawCurrentCircle} A`;
+    const currentIsActive =
+      rawCurrentCircle &&
+      rawCurrentCircle !== "unknown" &&
+      rawCurrentCircle !== "unavailable" &&
+      Number(rawCurrentCircle) > 0;
 
     // Detail: Aktuelle Leistung – Sensor liefert Watt, Anzeige in kW
     const rawSessionEnergy = sessionEnergyState ? sessionEnergyState.state : null;
@@ -103,6 +108,8 @@ class AlfenWallboxCard extends HTMLElement {
     const colorChargingOff = cfg.color_charging_off || null;
     const colorPluggedOn = cfg.color_plugged_on || null;
     const colorPluggedOff = cfg.color_plugged_off || null;
+    const colorCurrentActive = cfg.color_current_active || "#22c55e";
+    const colorCurrentIdle = cfg.color_current_idle || null;
 
     // Status oben rechts
     let statusText = "Bereit";
@@ -344,7 +351,13 @@ class AlfenWallboxCard extends HTMLElement {
       <div class="wrapper ${statusClass}">
         <div class="left">
           <div class="power-circle">
-            <div class="power-value">${currentCircleDisplay}</div>
+            <div class="power-value" ${
+              currentIsActive && colorCurrentActive
+                ? `style="color:${colorCurrentActive};"`
+                : !currentIsActive && colorCurrentIdle
+                ? `style="color:${colorCurrentIdle};"`
+                : ""
+            }>${currentCircleDisplay}</div>
             <div class="power-label">Aktueller Strom</div>
           </div>
         </div>
@@ -757,6 +770,16 @@ class AlfenWallboxCardEditor extends HTMLElement {
     titleColors.classList.add("section-title");
     titleColors.textContent = "Farben (optional)";
     sectionColors.appendChild(titleColors);
+
+    const rowColors0 = document.createElement("div");
+    rowColors0.classList.add("row");
+    rowColors0.appendChild(
+      makeColorInput("Strom aktiv (>0 A)", "color_current_active")
+    );
+    rowColors0.appendChild(
+      makeColorInput("Strom inaktiv (0 A)", "color_current_idle")
+    );
+    sectionColors.appendChild(rowColors0);
 
     const rowColors1 = document.createElement("div");
     rowColors1.classList.add("row");

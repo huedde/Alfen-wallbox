@@ -355,7 +355,8 @@ class AlfenWallboxCard extends HTMLElement {
               currentIsActive
                 ? (colorCurrentActive || "#22c55e")
                 : (colorCurrentIdle || "#f9fafb")
-            };">
+            }; cursor: ${cfg.entity_current ? "pointer" : "default"};"
+            data-action="more-info" data-entity="${cfg.entity_current || ""}">
             <div class="power-value">${currentCircleDisplay}</div>
             <div class="power-label">Aktueller Strom</div>
           </div>
@@ -372,7 +373,11 @@ class AlfenWallboxCard extends HTMLElement {
           </div>
 
           <div class="details">
-            <div class="detail-row">
+            <div class="detail-row" ${
+              cfg.entity_session_energy
+                ? `style="cursor:pointer;" data-action="more-info" data-entity="${cfg.entity_session_energy}"`
+                : ""
+            }>
               <span class="label">Aktuelle Leistung</span>
               <span class="value">${sessionDisplay}</span>
             </div>
@@ -398,13 +403,13 @@ class AlfenWallboxCard extends HTMLElement {
               cfg.online_entity
                 ? `<span class="chip ${
                     onlineOn ? "chip-status-on" : "chip-status-off"
-                  }" ${
+                  }" data-action="history" data-entity="${cfg.online_entity}" style="cursor:pointer;${
                     onlineOn && colorOnlineOn
-                      ? `style="background:${colorOnlineOn};border-color:${colorOnlineOn};color:#ffffff;"`
+                      ? `background:${colorOnlineOn};border-color:${colorOnlineOn};color:#ffffff;`
                       : !onlineOn && colorOnlineOff
-                      ? `style="background:${colorOnlineOff};border-color:${colorOnlineOff};color:#ffffff;"`
+                      ? `background:${colorOnlineOff};border-color:${colorOnlineOff};color:#ffffff;`
                       : ""
-                  }>${onlineOn ? "Online" : "Offline"}</span>`
+                  }">${onlineOn ? "Online" : "Offline"}</span>`
                 : ""
             }
             ${
@@ -438,12 +443,29 @@ class AlfenWallboxCard extends HTMLElement {
       </div>
     `;
 
-    // Button Actions
-    const buttons = this.card.querySelectorAll("button[data-action]");
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", (ev) => {
+    // Klick-Aktionen
+    const clickables = this.card.querySelectorAll("[data-action]");
+    clickables.forEach((el) => {
+      el.addEventListener("click", (ev) => {
         const action = ev.currentTarget.getAttribute("data-action");
+        const entityId = ev.currentTarget.getAttribute("data-entity");
         if (!this._hass || !this._config) return;
+
+        if (action === "more-info" && entityId) {
+          const event = new Event("hass-more-info", {
+            bubbles: true,
+            composed: true,
+          });
+          event.detail = { entityId: entityId };
+          this.dispatchEvent(event);
+        }
+
+        if (action === "history" && entityId) {
+          window.open(
+            `/history?entity_id=${entityId}`,
+            "_self"
+          );
+        }
 
         if (action === "toggle_switch" && this._config.switch_entity) {
           const st = getState(this._config.switch_entity);

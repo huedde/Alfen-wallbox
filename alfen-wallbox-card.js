@@ -188,7 +188,6 @@ class AlfenWallboxCard extends HTMLElement {
             box-shadow 0.3s ease;
           border: 4px solid #9ca3af;
           background: radial-gradient(circle at 50% 50%, #111827, #020617);
-          color: #f9fafb;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);
@@ -197,10 +196,12 @@ class AlfenWallboxCard extends HTMLElement {
         .alfen-wallbox-card .power-value {
           font-size: 22px;
           font-weight: 700;
+          color: inherit !important;
         }
         .alfen-wallbox-card .power-label {
           font-size: 12px;
-          opacity: 0.9;
+          opacity: 0.85;
+          color: inherit !important;
         }
         .alfen-wallbox-card .title-row {
           display: flex;
@@ -350,13 +351,11 @@ class AlfenWallboxCard extends HTMLElement {
       </style>
       <div class="wrapper ${statusClass}">
         <div class="left">
-          <div class="power-circle" ${
-              currentIsActive && colorCurrentActive
-                ? `style="color:${colorCurrentActive};"`
-                : !currentIsActive && colorCurrentIdle
-                ? `style="color:${colorCurrentIdle};"`
-                : ""
-            }>
+          <div class="power-circle" style="color:${
+              currentIsActive
+                ? (colorCurrentActive || "#22c55e")
+                : (colorCurrentIdle || "#f9fafb")
+            };">
             <div class="power-value">${currentCircleDisplay}</div>
             <div class="power-label">Aktueller Strom</div>
           </div>

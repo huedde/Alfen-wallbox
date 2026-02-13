@@ -461,10 +461,12 @@ class AlfenWallboxCard extends HTMLElement {
         }
 
         if (action === "history" && entityId) {
-          window.open(
-            `/history?entity_id=${entityId}`,
-            "_self"
-          );
+          const event = new Event("hass-more-info", {
+            bubbles: true,
+            composed: true,
+          });
+          event.detail = { entityId: entityId };
+          this.dispatchEvent(event);
         }
 
         if (action === "toggle_switch" && this._config.switch_entity) {

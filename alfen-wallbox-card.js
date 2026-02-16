@@ -41,6 +41,7 @@ class AlfenWallboxCard extends HTMLElement {
     const statusState = getState(cfg.entity_status);
     const sessionEnergyState = getState(cfg.entity_session_energy);
     const setCurrentState = getState(cfg.entity_set_current);
+    const userState = getState(cfg.entity_user);
     const onlineState = getState(cfg.online_entity);
     const switchState = getState(cfg.switch_entity);
     const pluggedState = getState(cfg.plugged_entity);
@@ -80,6 +81,15 @@ class AlfenWallboxCard extends HTMLElement {
         sessionDisplay = `${kw.toFixed(1)} kW`;
       }
     }
+
+    // Detail: Benutzer
+    const rawUser = userState ? userState.state : null;
+    const userDisplay =
+      !rawUser ||
+      rawUser === "unknown" ||
+      rawUser === "unavailable"
+        ? "-"
+        : rawUser;
 
     // Detail: Vorgabe Ladestrom – eigene Entität, unabhängig vom Kreis
     const rawSetCurrent = setCurrentState ? setCurrentState.state : null;
@@ -395,6 +405,14 @@ class AlfenWallboxCard extends HTMLElement {
               <span class="label">Vorgabe Ladestrom</span>
               <span class="value">${setCurrentDisplay}</span>
             </div>
+            ${
+              cfg.entity_user
+                ? `<div class="detail-row">
+                     <span class="label">Benutzer</span>
+                     <span class="value">${userDisplay}</span>
+                   </div>`
+                : ""
+            }
           </div>
 
           <div class="chips">
@@ -747,6 +765,13 @@ class AlfenWallboxCardEditor extends HTMLElement {
       makeSelect(
         "Vorgabe Ladestrom",
         "entity_set_current",
+        (id) => id.startsWith("sensor.")
+      )
+    );
+    rowSet.appendChild(
+      makeSelect(
+        "Benutzer",
+        "entity_user",
         (id) => id.startsWith("sensor.")
       )
     );

@@ -405,14 +405,10 @@ class AlfenWallboxCard extends HTMLElement {
               <span class="label">Vorgabe Ladestrom</span>
               <span class="value">${setCurrentDisplay}</span>
             </div>
-            ${
-              cfg.entity_user
-                ? `<div class="detail-row">
-                     <span class="label">Benutzer</span>
-                     <span class="value">${userDisplay}</span>
-                   </div>`
-                : ""
-            }
+            <div class="detail-row">
+              <span class="label">Benutzer</span>
+              <span class="value">${userDisplay}</span>
+            </div>
           </div>
 
           <div class="chips">

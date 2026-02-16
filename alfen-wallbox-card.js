@@ -120,6 +120,8 @@ class AlfenWallboxCard extends HTMLElement {
     const colorPluggedOff = cfg.color_plugged_off || null;
     const colorCurrentActive = cfg.color_current_active || "#22c55e";
     const colorCurrentIdle = cfg.color_current_idle || null;
+    const colorUserOn = cfg.color_user_on || null;
+    const colorUserOff = cfg.color_user_off || null;
 
     // Status oben rechts
     let statusText = "Bereit";
@@ -407,7 +409,13 @@ class AlfenWallboxCard extends HTMLElement {
             </div>
             <div class="detail-row">
               <span class="label">Benutzer</span>
-              <span class="value">${userDisplay}</span>
+              <span class="value" ${
+                userDisplay !== "-" && colorUserOn
+                  ? `style="color:${colorUserOn};"`
+                  : userDisplay === "-" && colorUserOff
+                  ? `style="color:${colorUserOff};"`
+                  : ""
+              }>${userDisplay}</span>
             </div>
           </div>
 
@@ -560,18 +568,17 @@ class AlfenWallboxCardEditor extends HTMLElement {
       lab.style.fontSize = "12px";
       lab.style.marginBottom = "2px";
 
-      const select = document.createElement("select");
-      select.style.width = "100%";
-      select.style.padding = "4px 6px";
-      select.style.background = "var(--card-background-color)";
-      select.style.color = "var(--primary-text-color)";
-      select.style.borderRadius = "4px";
-      select.style.border = "1px solid var(--divider-color)";
+      const listId = "dl-" + key + "-" + Math.random().toString(36).slice(2, 8);
 
-      const empty = document.createElement("option");
-      empty.value = "";
-      empty.textContent = "– nicht gesetzt –";
-      select.appendChild(empty);
+      const input = document.createElement("input");
+      input.type = "text";
+      input.setAttribute("list", listId);
+      input.setAttribute("autocomplete", "off");
+      input.placeholder = "Entität suchen…";
+      input.value = cfg[key] || "";
+
+      const datalist = document.createElement("datalist");
+      datalist.id = listId;
 
       Object.keys(entities)
         .filter(filterFn)
@@ -579,22 +586,21 @@ class AlfenWallboxCardEditor extends HTMLElement {
         .forEach((id) => {
           const opt = document.createElement("option");
           opt.value = id;
-          opt.textContent = id;
-          select.appendChild(opt);
+          datalist.appendChild(opt);
         });
 
-      select.value = cfg[key] || "";
-
-      select.addEventListener("change", (ev) => {
+      input.addEventListener("change", (ev) => {
+        const val = ev.target.value.trim();
         this._config = {
           ...this._config,
-          [key]: ev.target.value || undefined,
+          [key]: val || undefined,
         };
         this._fireConfigChanged();
       });
 
       wrapper.appendChild(lab);
-      wrapper.appendChild(select);
+      wrapper.appendChild(input);
+      wrapper.appendChild(datalist);
       return wrapper;
     };
 
@@ -834,6 +840,16 @@ class AlfenWallboxCardEditor extends HTMLElement {
       makeColorInput("Strom inaktiv (0 A)", "color_current_idle")
     );
     sectionColors.appendChild(rowColors0);
+
+    const rowColorsUser = document.createElement("div");
+    rowColorsUser.classList.add("row");
+    rowColorsUser.appendChild(
+      makeColorInput("Benutzer (gesetzt)", "color_user_on")
+    );
+    rowColorsUser.appendChild(
+      makeColorInput("Benutzer (leer)", "color_user_off")
+    );
+    sectionColors.appendChild(rowColorsUser);
 
     const rowColors1 = document.createElement("div");
     rowColors1.classList.add("row");

@@ -6,7 +6,9 @@ class AlfenWallboxCard extends HTMLElement {
   static getStubConfig() {
     return {
       name: "Alfen Wallbox",
-      entity_current: "",
+      entity_current_l1: "",
+      entity_current_l2: "",
+      entity_current_l3: "",
     };
   }
 
@@ -37,7 +39,9 @@ class AlfenWallboxCard extends HTMLElement {
       return v === "on" || v === "true" || v === "1";
     };
 
-    const currentState = getState(cfg.entity_current);
+    const currentStateL1 = getState(cfg.entity_current_l1);
+    const currentStateL2 = getState(cfg.entity_current_l2);
+    const currentStateL3 = getState(cfg.entity_current_l3);
     const statusState = getState(cfg.entity_status);
     const sessionEnergyState = getState(cfg.entity_session_energy);
     const setCurrentState = getState(cfg.entity_set_current);
@@ -49,22 +53,30 @@ class AlfenWallboxCard extends HTMLElement {
 
     const name =
       cfg.name ||
-      (currentState && currentState.attributes.friendly_name) ||
+      (currentStateL1 && currentStateL1.attributes.friendly_name) ||
       "Alfen Wallbox";
 
-    // Kreis: aktueller Strom
-    const rawCurrentCircle = currentState ? currentState.state : "unavailable";
-    const currentCircleDisplay =
-      !rawCurrentCircle ||
-      rawCurrentCircle === "unknown" ||
-      rawCurrentCircle === "unavailable"
-        ? "- A"
-        : `${rawCurrentCircle} A`;
+    // Kreis: aktueller Strom pro Phase
+    const fmtPhase = (stateObj) => {
+      if (!stateObj) return "-";
+      const v = stateObj.state;
+      if (!v || v === "unknown" || v === "unavailable") return "-";
+      return `${Number(v).toFixed(1)}`;
+    };
+    const valL1 = fmtPhase(currentStateL1);
+    const valL2 = fmtPhase(currentStateL2);
+    const valL3 = fmtPhase(currentStateL3);
+
+    const phaseNum = (stateObj) => {
+      if (!stateObj) return 0;
+      const v = stateObj.state;
+      if (!v || v === "unknown" || v === "unavailable") return 0;
+      return Number(v) || 0;
+    };
     const currentIsActive =
-      rawCurrentCircle &&
-      rawCurrentCircle !== "unknown" &&
-      rawCurrentCircle !== "unavailable" &&
-      Number(rawCurrentCircle) > 0;
+      phaseNum(currentStateL1) > 0 ||
+      phaseNum(currentStateL2) > 0 ||
+      phaseNum(currentStateL3) > 0;
 
     // Detail: Aktuelle Leistung – Sensor liefert Watt, Anzeige in kW
     const rawSessionEnergy = sessionEnergyState ? sessionEnergyState.state : null;
@@ -191,8 +203,8 @@ class AlfenWallboxCard extends HTMLElement {
           overflow: hidden;
         }
         .alfen-wallbox-card .power-circle {
-          width: 90px;
-          height: 90px;
+          width: 110px;
+          height: 110px;
           border-radius: 50%;
           display: flex;
           flex-direction: column;
@@ -204,19 +216,32 @@ class AlfenWallboxCard extends HTMLElement {
             box-shadow 0.3s ease;
           border: 4px solid #9ca3af;
           background: radial-gradient(circle at 50% 50%, #111827, #020617);
+          gap: 1px;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);
           box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
-        .alfen-wallbox-card .power-value {
-          font-size: 18px;
-          font-weight: 700;
+        .alfen-wallbox-card .phase-row {
+          display: flex;
+          align-items: baseline;
+          gap: 3px;
+          font-size: 12px;
+          font-weight: 600;
           color: inherit !important;
         }
-        .alfen-wallbox-card .power-label {
-          font-size: 10px;
-          opacity: 0.85;
+        .alfen-wallbox-card .phase-label {
+          opacity: 0.6;
+          font-size: 9px;
+          font-weight: 500;
+        }
+        .alfen-wallbox-card .phase-val {
+          font-variant-numeric: tabular-nums;
+        }
+        .alfen-wallbox-card .power-unit {
+          font-size: 8px;
+          opacity: 0.7;
+          margin-top: 1px;
           color: inherit !important;
         }
         .alfen-wallbox-card .title-row {
@@ -377,10 +402,12 @@ class AlfenWallboxCard extends HTMLElement {
               currentIsActive
                 ? (colorCurrentActive || "#22c55e")
                 : (colorCurrentIdle || "#f9fafb")
-            }; cursor: ${cfg.entity_current ? "pointer" : "default"};"
-            data-action="more-info" data-entity="${cfg.entity_current || ""}">
-            <div class="power-value">${currentCircleDisplay}</div>
-            <div class="power-label">Aktueller Strom</div>
+            }; cursor: ${cfg.entity_current_l1 ? "pointer" : "default"};"
+            data-action="more-info" data-entity="${cfg.entity_current_l1 || ""}">
+            <div class="phase-row"><span class="phase-label">L1</span> <span class="phase-val">${valL1}</span></div>
+            <div class="phase-row"><span class="phase-label">L2</span> <span class="phase-val">${valL2}</span></div>
+            <div class="phase-row"><span class="phase-label">L3</span> <span class="phase-val">${valL3}</span></div>
+            <div class="power-unit">Ampere</div>
           </div>
         </div>
         <div class="right">
@@ -725,13 +752,30 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameField.appendChild(nameInput);
     sectionGeneral.appendChild(nameField);
 
-    sectionGeneral.appendChild(
+    const rowPhases = document.createElement("div");
+    rowPhases.classList.add("row");
+    rowPhases.appendChild(
       makeSelect(
-        "Aktueller Strom – entity_current",
-        "entity_current",
+        "Strom L1",
+        "entity_current_l1",
         (id) => id.startsWith("sensor.")
       )
     );
+    rowPhases.appendChild(
+      makeSelect(
+        "Strom L2",
+        "entity_current_l2",
+        (id) => id.startsWith("sensor.")
+      )
+    );
+    rowPhases.appendChild(
+      makeSelect(
+        "Strom L3",
+        "entity_current_l3",
+        (id) => id.startsWith("sensor.")
+      )
+    );
+    sectionGeneral.appendChild(rowPhases);
 
     container.appendChild(sectionGeneral);
 
@@ -774,7 +818,7 @@ class AlfenWallboxCardEditor extends HTMLElement {
       makeSelect(
         "Benutzer",
         "entity_user",
-        (id) => id.startsWith("sensor.")
+        () => true
       )
     );
     sectionMetrics.appendChild(rowSet);

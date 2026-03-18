@@ -202,6 +202,20 @@ class AlfenWallboxCard extends HTMLElement {
           min-width: 0;
           overflow: hidden;
         }
+        @keyframes pulse-ring {
+          0% {
+            border-color: #1e40af;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0,0,0,0.18);
+          }
+          50% {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.2);
+          }
+          100% {
+            border-color: #1e40af;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0,0,0,0.18);
+          }
+        }
         .alfen-wallbox-card .power-circle {
           width: 110px;
           height: 110px;
@@ -217,6 +231,9 @@ class AlfenWallboxCard extends HTMLElement {
           border: 4px solid #9ca3af;
           background: radial-gradient(circle at 50% 50%, #111827, #020617);
           gap: 1px;
+        }
+        .alfen-wallbox-card .power-circle.charging {
+          animation: pulse-ring 2s ease-in-out infinite;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);
@@ -398,7 +415,7 @@ class AlfenWallboxCard extends HTMLElement {
       </style>
       <div class="wrapper ${statusClass}">
         <div class="left">
-          <div class="power-circle" style="color:${
+          <div class="power-circle${currentIsActive ? " charging" : ""}" style="color:${
               currentIsActive
                 ? (colorCurrentActive || "#22c55e")
                 : (colorCurrentIdle || "#f9fafb")

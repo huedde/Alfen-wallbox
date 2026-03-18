@@ -13,12 +13,7 @@ class AlfenWallboxCard extends HTMLElement {
   }
 
   setConfig(config) {
-    const cfg = { ...config };
-    if (cfg.entity_current && !cfg.entity_current_l1) {
-      cfg.entity_current_l1 = cfg.entity_current;
-      delete cfg.entity_current;
-    }
-    this._config = cfg;
+    this._config = { ...config };
     if (this.card) return;
 
     const card = document.createElement("ha-card");

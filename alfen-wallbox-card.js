@@ -553,7 +553,7 @@ window.customCards.push({
   type: "alfen-wallbox-card",
   name: "Alfen Wallbox Card",
   description:
-    "Zeigt Strom (A), Status, Session-Energie und Steuerung eines Alfen-Ladepunkts an.",
+    "Zeigt Strom (L1/L2/L3), Status, Leistung und Steuerung eines Alfen-Ladepunkts an.",
 });
 
 class AlfenWallboxCardEditor extends HTMLElement {

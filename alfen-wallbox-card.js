@@ -205,19 +205,11 @@ class AlfenWallboxCard extends HTMLElement {
         @keyframes pulse-ring {
           0%, 100% {
             border-color: #1e3a8a;
-            box-shadow: 0 0 6px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(0,0,0,0.18);
-          }
-          25% {
-            border-color: #2563eb;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4), 0 0 24px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 4px rgba(30, 58, 138, 0.3);
           }
           50% {
             border-color: #60a5fa;
-            box-shadow: 0 0 20px rgba(96, 165, 250, 0.5), 0 0 40px rgba(59, 130, 246, 0.15);
-          }
-          75% {
-            border-color: #2563eb;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4), 0 0 24px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 18px rgba(96, 165, 250, 0.45), 0 0 36px rgba(59, 130, 246, 0.12);
           }
         }
         .alfen-wallbox-card .power-circle {
@@ -237,7 +229,7 @@ class AlfenWallboxCard extends HTMLElement {
           gap: 1px;
         }
         .alfen-wallbox-card .power-circle.charging {
-          animation: pulse-ring 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+          animation: pulse-ring 4s ease-in-out infinite;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);

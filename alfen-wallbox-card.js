@@ -752,30 +752,27 @@ class AlfenWallboxCardEditor extends HTMLElement {
     nameField.appendChild(nameInput);
     sectionGeneral.appendChild(nameField);
 
-    const rowPhases = document.createElement("div");
-    rowPhases.classList.add("row");
-    rowPhases.appendChild(
+    sectionGeneral.appendChild(
       makeSelect(
         "Strom L1",
         "entity_current_l1",
-        (id) => id.startsWith("sensor.")
+        () => true
       )
     );
-    rowPhases.appendChild(
+    sectionGeneral.appendChild(
       makeSelect(
         "Strom L2",
         "entity_current_l2",
-        (id) => id.startsWith("sensor.")
+        () => true
       )
     );
-    rowPhases.appendChild(
+    sectionGeneral.appendChild(
       makeSelect(
         "Strom L3",
         "entity_current_l3",
-        (id) => id.startsWith("sensor.")
+        () => true
       )
     );
-    sectionGeneral.appendChild(rowPhases);
 
     container.appendChild(sectionGeneral);
 

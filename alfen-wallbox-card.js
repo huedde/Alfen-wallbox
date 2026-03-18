@@ -177,7 +177,17 @@ class AlfenWallboxCard extends HTMLElement {
     const switchOn = switchState && isTruthy(switchState);
     const switchLabel = switchOn ? "Laden stoppen" : "Laden starten";
 
-    // HTML
+    // HTML - nur updaten wenn sich Inhalte geaendert haben
+    const contentKey = [
+      name, valL1, valL2, valL3, currentIsActive,
+      sessionDisplay, setCurrentDisplay, userDisplay,
+      statusText, statusClass, plugChipText, chargeChipText,
+      onlineOn, pluggedOn, chargingOn, switchOn
+    ].join("|");
+
+    if (this._lastContentKey === contentKey) return;
+    this._lastContentKey = contentKey;
+
     this.card.innerHTML = `
       <style>
         .alfen-wallbox-card .wrapper {

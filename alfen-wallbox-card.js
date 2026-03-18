@@ -233,7 +233,7 @@ class AlfenWallboxCard extends HTMLElement {
           gap: 1px;
         }
         .alfen-wallbox-card .power-circle.charging {
-          animation: pulse-ring 2s ease-in-out infinite;
+          animation: pulse-ring 4s ease-in-out infinite;
         }
         .alfen-wallbox-card .power-circle:hover {
           transform: translateY(-1px);
